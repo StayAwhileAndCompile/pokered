@@ -180,7 +180,7 @@ ItemUseBall:
 ; Poké Ball:         [0, 255]
 ; Great Ball:        [0, 200]
 ; Ultra Ball:        [0, 150]
-; Safari Ball:       [0, 99]
+; Safari Ball:       [0, 50]
 ; Loop until an acceptable number is found.
 
 .loop
@@ -210,10 +210,10 @@ ItemUseBall:
 	jr z, .checkForAilments
 
 ; If it's an Ultra Ball and Rand1 is greater than 150, try again.
-; If it's a Safari Ball and Rand1 is greater than 99, try again.
+; If it's a Safari Ball and Rand1 is greater than 50, try again.
 	ld a, [hl]
 	cp SAFARI_BALL
-	ld a, 99
+	ld a, 50
 	jr z, .gotMaxRand1
 	ld a, 150
 .gotMaxRand1
