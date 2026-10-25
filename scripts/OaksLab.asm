@@ -192,12 +192,13 @@ OaksLabPlayerForcedToWalkBackScript:
 	ret
 
 OaksLabChoseStarterScript:
-	ld a, [wPlayerStarter]
-	cp STARTER1
-	jr z, .Charmander
+	; walk the rival to the ball he's taking (his pick is random if the player took MEW)
+	ld a, [wRivalStarterTemp]
 	cp STARTER2
-	jr z, .Squirtle
-	jr .Bulbasaur
+	jr z, .Charmander ; middle ball
+	cp STARTER3
+	jr z, .Squirtle ; right ball
+	jr .Bulbasaur ; left ball
 .Charmander
 	ld de, .MiddleBallMovement1
 	ld a, [wYCoord]
@@ -896,7 +897,7 @@ OaksLabMonChoiceMenu:
 	call YesNoChoice ; yes/no menu
 	ld a, [wCurrentMenuItem]
 	and a
-	jr nz, OaksLabMonChoiceEnd
+	jr nz, OaksLabDeclinedStarter
 	ld a, [wCurPartySpecies]
 	ld [wPlayerStarter], a
 	ld [wNamedObjectIndex], a
@@ -935,7 +936,11 @@ OaksLabMonChoiceMenu:
 	ld [wJoyIgnore], a
 	ld a, SCRIPT_OAKSLAB_CHOSE_STARTER_SCRIPT
 	ld [wOaksLabCurScript], a
-OaksLabMonChoiceEnd:
+	jp TextScriptEnd
+
+OaksLabDeclinedStarter:
+	; saying NO to a poke ball makes OAK offer MEW the next time you talk to him
+	SetEvent EVENT_DECLINED_STARTER
 	jp TextScriptEnd
 
 OaksLabMonEnergeticText:
@@ -955,11 +960,20 @@ OaksLabLastMonScript:
 	call GetPointerWithinSpriteStateData1
 	ld [hl], SPRITE_FACING_DOWN
 	ld hl, OaksLabLastMonText
+	ld a, [wPlayerStarter]
+	cp MEW
+	jr nz, .print
+	ld hl, OaksLabLastTwoMonText ; two balls are left on the table if the player took MEW
+.print
 	call PrintText
 	jp TextScriptEnd
 
 OaksLabLastMonText:
 	text_far _OaksLabLastMonText
+	text_end
+
+OaksLabLastTwoMonText:
+	text_far _OaksLabLastTwoMonText
 	text_end
 
 OaksLabOak1Text:
@@ -994,6 +1008,8 @@ OaksLabOak1Text:
 	ld a, [wStatusFlags4]
 	bit BIT_GOT_STARTER, a
 	jr nz, .already_got_pokemon
+	CheckEvent EVENT_DECLINED_STARTER
+	jp nz, OaksLabOakOffersMewScript
 	ld hl, .WhichPokemonDoYouWantText
 	call PrintText
 	jr .done
@@ -1067,6 +1083,123 @@ OaksLabOak1Text:
 
 .HowIsYourPokedexComingText:
 	text_far _OaksLabOak1HowIsYourPokedexComingText
+	text_end
+
+OaksLabOakOffersMewScript:
+	ld hl, OaksLabOakSeeOneYouLikeText
+	call PrintText
+	ld a, $1
+	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
+	call YesNoChoice
+	ld a, [wCurrentMenuItem]
+	and a
+	jr nz, .offerMew
+	ld hl, OaksLabOakGoAheadAndChooseText
+	call PrintText
+	jp TextScriptEnd
+
+.offerMew
+	ld hl, OaksLabOakHowAboutMewText
+	call PrintText
+	; show MEW's #DEX entry like the starters get (temporarily mark it as owned)
+	ld a, MEW
+	ld [wCurPartySpecies], a
+	ld [wPokedexNum], a
+	ld hl, wStatusFlags5
+	set BIT_NO_TEXT_DELAY, [hl]
+	ld hl, wPokedexOwned + (DEX_MEW - 1) / 8
+	set (DEX_MEW - 1) % 8, [hl]
+	predef ShowPokedexData
+	ld hl, wPokedexOwned + (DEX_MEW - 1) / 8
+	res (DEX_MEW - 1) % 8, [hl]
+	ld hl, wStatusFlags5
+	res BIT_NO_TEXT_DELAY, [hl]
+	call ReloadMapData
+	ld c, 10
+	call DelayFrames
+	ld hl, OaksLabOakDoYouWantMewText
+	call PrintText
+	ld a, $1
+	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
+	call YesNoChoice
+	ld a, [wCurrentMenuItem]
+	and a
+	jr z, .tookMew
+	ld hl, OaksLabOakMewTakeYourTimeText
+	call PrintText
+	jp TextScriptEnd
+
+.tookMew
+	; the rival picks one of the three poke balls at random
+.randomLoop
+	call Random
+	and %11
+	cp 3
+	jr z, .randomLoop
+	ld b, STARTER1
+	ld c, OAKSLAB_CHARMANDER_POKE_BALL
+	and a
+	jr z, .gotRivalPick
+	ld b, STARTER2
+	ld c, OAKSLAB_SQUIRTLE_POKE_BALL
+	dec a
+	jr z, .gotRivalPick
+	ld b, STARTER3
+	ld c, OAKSLAB_BULBASAUR_POKE_BALL
+.gotRivalPick
+	ld a, b
+	ld [wRivalStarterTemp], a
+	ld a, c
+	ld [wRivalStarterBallSpriteIndex], a
+
+	ld a, MEW
+	ld [wPlayerStarter], a
+	ld [wNamedObjectIndex], a
+	call GetMonName
+	ld a, $1
+	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
+	ld hl, OaksLabOakTakeGoodCareOfMewText
+	call PrintText
+	ld hl, OaksLabReceivedMonText
+	call PrintText
+	xor a ; PLAYER_PARTY_DATA
+	ld [wMonDataLocation], a
+	ld a, 5
+	ld [wCurEnemyLevel], a
+	ld a, MEW
+	ld [wCurPartySpecies], a
+	ld [wPokedexNum], a
+	call AddPartyMon
+	ld hl, wStatusFlags4
+	set BIT_GOT_STARTER, [hl]
+	ld a, PAD_SELECT | PAD_START | PAD_CTRL_PAD
+	ld [wJoyIgnore], a
+	ld a, SCRIPT_OAKSLAB_CHOSE_STARTER_SCRIPT
+	ld [wOaksLabCurScript], a
+	jp TextScriptEnd
+
+OaksLabOakSeeOneYouLikeText:
+	text_far _OaksLabOakSeeOneYouLikeText
+	text_end
+
+OaksLabOakGoAheadAndChooseText:
+	text_far _OaksLabOakGoAheadAndChooseText
+	text_end
+
+OaksLabOakHowAboutMewText:
+	text_far _OaksLabOakHowAboutMewText
+	text_end
+
+OaksLabOakDoYouWantMewText:
+	text_far _OaksLabOakDoYouWantMewText
+	text_end
+
+OaksLabOakMewTakeYourTimeText:
+	text_far _OaksLabOakMewTakeYourTimeText
+	text_end
+
+OaksLabOakTakeGoodCareOfMewText:
+	text_far _OaksLabOakTakeGoodCareOfMewText
 	text_end
 
 OaksLabPokedexText:

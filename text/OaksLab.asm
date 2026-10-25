@@ -60,6 +60,55 @@ _OaksLabLastMonText::
 	line "last #MON!"
 	done
 
+_OaksLabLastTwoMonText::
+	text "Those are the"
+	line "last of PROF."
+	cont "OAK's #MON!"
+	done
+
+_OaksLabOakSeeOneYouLikeText::
+	text "OAK: Hm? <PLAYER>,"
+	line "do you see one"
+	cont "you like?"
+	done
+
+_OaksLabOakGoAheadAndChooseText::
+	text "OAK: Then go"
+	line "ahead and choose"
+	cont "one of the three"
+	cont "on the table!"
+	done
+
+_OaksLabOakHowAboutMewText::
+	text "OAK: None of them"
+	line "catch your eye?"
+
+	para "Hmm... Well, there"
+	line "is one more..."
+
+	para "It's a very rare"
+	line "#MON that I've"
+	cont "been studying."
+	prompt
+
+_OaksLabOakDoYouWantMewText::
+	text "OAK: This is MEW!"
+	line "Will you raise it"
+	cont "for me?"
+	done
+
+_OaksLabOakMewTakeYourTimeText::
+	text "OAK: I see. Take"
+	line "your time and"
+	cont "choose carefully!"
+	done
+
+_OaksLabOakTakeGoodCareOfMewText::
+	text "OAK: Wonderful!"
+	line "Take good care"
+	cont "of MEW!"
+	prompt
+
 _OaksLabOak1WhichPokemonDoYouWantText::
 	text "OAK: Now, <PLAYER>,"
 	line "which #MON do"
