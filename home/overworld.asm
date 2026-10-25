@@ -394,6 +394,7 @@ DoBikeSpeedup::
 
 ; function to make running (on foot) twice as fast as walking
 ; runs while B is held, or while B is not held if auto-run is on
+; B is checked every frame, so the speed can change in the middle of a step
 DoRunningSpeedup::
 	ld a, [wNPCMovementScriptPointerTableNum]
 	and a
@@ -404,7 +405,11 @@ DoRunningSpeedup::
 	ld a, [wMovementFlags]
 	and (1 << BIT_LEDGE_OR_FISHING) | (1 << BIT_SPINNING)
 	ret nz
-	ldh a, [hJoyHeld]
+	ld a, [wWalkCounter]
+	cp 2
+	ret c ; an extra advance on the last frame of a step would overshoot it
+	; hJoyHeld is only updated between steps; hJoyInput is read every VBlank
+	ldh a, [hJoyInput]
 	and PAD_B
 	ld b, a ; b = PAD_B if B is held, otherwise 0
 	ld a, [wOptions]
