@@ -787,6 +787,7 @@ NEXTU
 wOptionsTextSpeedCursorX:: db
 wOptionsBattleAnimCursorX:: db
 wOptionsBattleStyleCursorX:: db
+wOptionsAutoRunCursorX:: db
 wOptionsCancelCursorX:: db
 
 NEXTU

@@ -277,12 +277,17 @@ OverworldLoopLessDelay::
 	ld hl, wMiscFlags
 	res BIT_TURNING, [hl]
 	ld a, [wWalkBikeSurfState]
+	and a ; walking?
+	jr z, .checkRunning
 	dec a ; riding a bike?
 	jr nz, .normalPlayerSpriteAdvancement
 	ld a, [wMovementFlags]
 	bit BIT_LEDGE_OR_FISHING, a
 	jr nz, .normalPlayerSpriteAdvancement
 	call DoBikeSpeedup
+	jr .normalPlayerSpriteAdvancement
+.checkRunning
+	call DoRunningSpeedup
 .normalPlayerSpriteAdvancement
 	call AdvancePlayerSprite
 	ld a, [wWalkCounter]
@@ -385,6 +390,31 @@ DoBikeSpeedup::
 	and PAD_UP | PAD_LEFT | PAD_RIGHT
 	ret nz
 .goFaster
+	jp AdvancePlayerSprite
+
+; function to make running (on foot) twice as fast as walking
+; runs while B is held, or while B is not held if auto-run is on
+DoRunningSpeedup::
+	ld a, [wNPCMovementScriptPointerTableNum]
+	and a
+	ret nz
+	ld a, [wStatusFlags5]
+	bit BIT_SCRIPTED_MOVEMENT_STATE, a
+	ret nz ; don't speed up scripted movement
+	ld a, [wMovementFlags]
+	and (1 << BIT_LEDGE_OR_FISHING) | (1 << BIT_SPINNING)
+	ret nz
+	ldh a, [hJoyHeld]
+	and PAD_B
+	ld b, a ; b = PAD_B if B is held, otherwise 0
+	ld a, [wOptions]
+	bit BIT_AUTO_RUN, a
+	ld a, b
+	jr z, .checkB
+	xor PAD_B ; auto-run inverts B: hold B to walk
+.checkB
+	and a
+	ret z
 	jp AdvancePlayerSprite
 
 ; check if the player has stepped onto a warp after having not collided
