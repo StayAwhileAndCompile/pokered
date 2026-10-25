@@ -17,11 +17,11 @@ IF DEF(_BLUE)
 	db 17, SANDSHREW
 	db 16, VULPIX
 	db 20, PIDGEY
-	db 20, MEOWTH
-	db 19, SANDSHREW
-	db 17, VULPIX
+	db 20, MANKEY
+	db 19, EKANS
+	db 17, GROWLITHE
 	db 15, VULPIX
-	db 18, VULPIX
+	db 18, GROWLITHE
 ENDC
 	end_grass_wildmons
 

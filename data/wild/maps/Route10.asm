@@ -15,11 +15,11 @@ ENDC
 IF DEF(_BLUE)
 	db 11, SANDSHREW
 	db 13, SPEAROW
-	db 15, SANDSHREW
+	db 15, EKANS
 	db 17, VOLTORB
 	db 17, SPEAROW
 	db 13, SANDSHREW
-	db 17, SANDSHREW
+	db 17, EKANS
 ENDC
 	end_grass_wildmons
 
