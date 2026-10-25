@@ -1,7 +1,7 @@
 roms := \
-	pokered.gbc \
-	pokeblue.gbc \
-	pokeblue_debug.gbc
+	pokered.gb \
+	pokeblue.gb \
+	pokeblue_debug.gb
 patches := \
 	pokered.patch \
 	pokeblue.patch
@@ -63,9 +63,9 @@ RGBGFXFLAGS  ?= -Weverything
 	tools
 
 all: $(roms)
-red:        pokered.gbc
-blue:       pokeblue.gbc
-blue_debug: pokeblue_debug.gbc
+red:        pokered.gb
+blue:       pokeblue.gb
+blue_debug: pokeblue_debug.gb
 red_vc:     pokered.patch
 blue_vc:    pokeblue.patch
 
@@ -78,10 +78,10 @@ clean: tidy
 
 tidy:
 	$(RM) $(roms) \
-	      $(roms:.gbc=.sym) \
-	      $(roms:.gbc=.map) \
+	      $(roms:.gb=.sym) \
+	      $(roms:.gb=.map) \
 	      $(patches) \
-	      $(patches:.patch=_vc.gbc) \
+	      $(patches:.patch=_vc.gb) \
 	      $(patches:.patch=_vc.sym) \
 	      $(patches:.patch=_vc.map) \
 	      $(patches:%.patch=vc/%.constants.sym) \
@@ -112,7 +112,7 @@ $(pokeblue_debug_obj): RGBASMFLAGS += -D _BLUE -D _DEBUG
 $(pokered_vc_obj):     RGBASMFLAGS += -D _RED -D _RED_VC
 $(pokeblue_vc_obj):    RGBASMFLAGS += -D _BLUE -D _BLUE_VC
 
-%.patch: %_vc.gbc %.gbc vc/%.patch.template
+%.patch: %_vc.gb %.gb vc/%.patch.template
 	tools/make_patch $*_vc.sym $^ $@
 
 rgbdscheck.o: rgbdscheck.asm
@@ -144,20 +144,20 @@ endif
 
 
 RGBLINKFLAGS += -d
-pokered.gbc:        RGBLINKFLAGS += -p 0x00
-pokeblue.gbc:       RGBLINKFLAGS += -p 0x00
-pokeblue_debug.gbc: RGBLINKFLAGS += -p 0xff
-pokered_vc.gbc:     RGBLINKFLAGS += -p 0x00
-pokeblue_vc.gbc:    RGBLINKFLAGS += -p 0x00
+pokered.gb:        RGBLINKFLAGS += -p 0x00
+pokeblue.gb:       RGBLINKFLAGS += -p 0x00
+pokeblue_debug.gb: RGBLINKFLAGS += -p 0xff
+pokered_vc.gb:     RGBLINKFLAGS += -p 0x00
+pokeblue_vc.gb:    RGBLINKFLAGS += -p 0x00
 
 RGBFIXFLAGS += -jsv -n 0 -k 01 -l 0x33 -m MBC3+RAM+BATTERY -r 03
-pokered.gbc:        RGBFIXFLAGS += -p 0x00 -t "POKEMON RED"
-pokeblue.gbc:       RGBFIXFLAGS += -p 0x00 -t "POKEMON BLUE"
-pokeblue_debug.gbc: RGBFIXFLAGS += -p 0xff -t "POKEMON BLUE"
-pokered_vc.gbc:     RGBFIXFLAGS += -p 0x00 -t "POKEMON RED"
-pokeblue_vc.gbc:    RGBFIXFLAGS += -p 0x00 -t "POKEMON BLUE"
+pokered.gb:        RGBFIXFLAGS += -p 0x00 -t "POKEMON RED"
+pokeblue.gb:       RGBFIXFLAGS += -p 0x00 -t "POKEMON BLUE"
+pokeblue_debug.gb: RGBFIXFLAGS += -p 0xff -t "POKEMON BLUE"
+pokered_vc.gb:     RGBFIXFLAGS += -p 0x00 -t "POKEMON RED"
+pokeblue_vc.gb:    RGBFIXFLAGS += -p 0x00 -t "POKEMON BLUE"
 
-%.gbc: $$(%_obj) layout.link
+%.gb: $$(%_obj) layout.link
 	$(RGBLINK) $(RGBLINKFLAGS) -l layout.link -m $*.map -n $*.sym -o $@ $(filter %.o,$^)
 	$(RGBFIX) $(RGBFIXFLAGS) $@
 
