@@ -11,6 +11,8 @@ IF DEF(_DEBUG)
 	call DebugPressedOrHeldB
 	ret nz
 ENDC
+	CheckEvent EVENT_SAFARI_UNLIMITED_STEPS
+	jr nz, SafariZoneGameStillGoing ; no step limit for the ¥5,000 deal
 	ld a, [wSafariSteps]
 	ld b, a
 	ld a, [wSafariSteps + 1]

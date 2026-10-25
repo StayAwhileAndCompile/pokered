@@ -226,6 +226,13 @@ PrintSafariZoneSteps::
 	ld b, 3
 	ld c, 7
 	call TextBoxBorder
+	CheckEvent EVENT_SAFARI_UNLIMITED_STEPS
+	jr z, .limitedSteps
+	hlcoord 1, 1
+	ld de, SafariNoStepLimitText
+	call PlaceString
+	jr .printBalls
+.limitedSteps
 	hlcoord 1, 1
 	ld de, wSafariSteps
 	lb bc, 2, 3
@@ -233,6 +240,7 @@ PrintSafariZoneSteps::
 	hlcoord 4, 1
 	ld de, SafariSteps
 	call PlaceString
+.printBalls
 	hlcoord 1, 3
 	ld de, SafariBallText
 	call PlaceString
@@ -250,6 +258,9 @@ PrintSafariZoneSteps::
 
 SafariSteps:
 	db "/500@"
+
+SafariNoStepLimitText:
+	db "ALL DAY@"
 
 SafariBallText:
 	db "BALL×× @"

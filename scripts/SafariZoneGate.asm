@@ -79,6 +79,7 @@ SafariZoneGateLeavingSafariScript:
 	CheckAndResetEvent EVENT_SAFARI_GAME_OVER
 	jr z, .leaving_early
 	ResetEventReuseHL EVENT_IN_SAFARI_ZONE
+	ResetEventReuseHL EVENT_SAFARI_UNLIMITED_STEPS
 	call UpdateSprites
 	ld a, PAD_CTRL_PAD
 	ld [wJoyIgnore], a
@@ -154,34 +155,51 @@ SafariZoneGateSafariZoneWorker1WouldYouLikeToJoinText:
 	call YesNoChoice
 	ld a, [wCurrentMenuItem]
 	and a
-	jp nz, .PleaseComeAgain
+	jr nz, .SecretOffer
 	xor a
 	ldh [hMoney], a
 	ld a, $05
 	ldh [hMoney + 1], a
-	ld a, $00
-	ldh [hMoney + 2], a
-	call HasEnoughMoney
-	jr nc, .success
-	ld hl, .NotEnoughMoneyText
-	call PrintText
-	jr .CantPayWalkDown
-
-.success
 	xor a
-	ld [wPriceTemp], a
-	ld a, $05
-	ld [wPriceTemp + 1], a
-	ld a, $00
-	ld [wPriceTemp + 2], a
-	ld hl, wPriceTemp + 2
+	ldh [hMoney + 2], a ; ¥500
+	call HasEnoughMoney
+	jr c, .NotEnoughMoney
+	ResetEvent EVENT_SAFARI_UNLIMITED_STEPS
+	ld hl, .MakePaymentText
+	jr .pay
+
+.SecretOffer
+	ld hl, .SecretOfferText
+	call PrintText
+	ld a, MONEY_BOX
+	ld [wTextBoxID], a
+	call DisplayTextBoxID
+	call YesNoChoice
+	ld a, [wCurrentMenuItem]
+	and a
+	jr nz, .PleaseComeAgain
+	xor a
+	ldh [hMoney], a
+	ld a, $50
+	ldh [hMoney + 1], a
+	xor a
+	ldh [hMoney + 2], a ; ¥5,000
+	call HasEnoughMoney
+	jr c, .NotEnoughMoney
+	SetEvent EVENT_SAFARI_UNLIMITED_STEPS
+	ld hl, .MakeSecretPaymentText
+
+.pay
+; subtract the price in hMoney from the player's money
+	push hl
 	ld de, wPlayerMoney + 2
+	ld hl, hMoney + 2
 	ld c, 3
 	predef SubBCDPredef
 	ld a, MONEY_BOX
 	ld [wTextBoxID], a
 	call DisplayTextBoxID
-	ld hl, .MakePaymentText
+	pop hl
 	call PrintText
 	ld a, 30
 	ld [wNumSafariBalls], a
@@ -197,6 +215,11 @@ SafariZoneGateSafariZoneWorker1WouldYouLikeToJoinText:
 	ld a, SCRIPT_SAFARIZONEGATE_PLAYER_MOVING
 	ld [wSafariZoneGateCurScript], a
 	jr .done
+
+.NotEnoughMoney
+	ld hl, .NotEnoughMoneyText
+	call PrintText
+	jr .CantPayWalkDown
 
 .PleaseComeAgain
 	ld hl, .PleaseComeAgainText
@@ -214,6 +237,16 @@ SafariZoneGateSafariZoneWorker1WouldYouLikeToJoinText:
 	text_far _SafariZoneGateSafariZoneWorker1ThatllBe500PleaseText
 	sound_get_item_1
 	text_far _SafariZoneGateSafariZoneWorker1CallYouOnThePAText
+	text_end
+
+.SecretOfferText
+	text_far _SafariZoneGateSafariZoneWorker1SecretOfferText
+	text_end
+
+.MakeSecretPaymentText
+	text_far _SafariZoneGateSafariZoneWorker1ThatllBe5000PleaseText
+	sound_get_item_1
+	text_far _SafariZoneGateSafariZoneWorker1CallYouWhenOutOfBallsText
 	text_end
 
 .PleaseComeAgainText
@@ -238,7 +271,7 @@ SafariZoneGateSafariZoneWorker1LeavingEarlyText:
 	ld a, PAD_DOWN
 	ld c, 3
 	call SafariZoneEntranceAutoWalk
-	ResetEvents EVENT_SAFARI_GAME_OVER, EVENT_IN_SAFARI_ZONE
+	ResetEvents EVENT_SAFARI_GAME_OVER, EVENT_IN_SAFARI_ZONE, EVENT_SAFARI_UNLIMITED_STEPS
 	ld a, SCRIPT_SAFARIZONEGATE_DEFAULT
 	ld [wNextSafariZoneGateScript], a
 	jr .set_current_script

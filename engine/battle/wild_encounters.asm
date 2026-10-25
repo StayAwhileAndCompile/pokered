@@ -54,6 +54,13 @@ TryDoWildEncounter:
 	ldh a, [hRandomSub]
 	ld b, a
 	ld hl, WildMonEncounterSlotChances
+; the Safari Zone areas use their own table with better odds for the rare slots
+	ld a, [wCurMap]
+	cp SAFARI_ZONE_EAST
+	jr c, .determineEncounterSlot
+	cp SAFARI_ZONE_CENTER + 1
+	jr nc, .determineEncounterSlot
+	ld hl, SafariZoneEncounterSlotChances
 .determineEncounterSlot
 	ld a, [hli]
 	cp b

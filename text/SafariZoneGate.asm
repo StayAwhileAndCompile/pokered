@@ -34,6 +34,40 @@ _SafariZoneGateSafariZoneWorker1CallYouOnThePAText::
 	cont "or SAFARI BALLs!"
 	done
 
+_SafariZoneGateSafariZoneWorker1SecretOfferText::
+	text "Hey kid! I'm not"
+	line "supposed to tell"
+	cont "anyone this, but"
+	cont "for ¥5,000 you"
+	cont "can walk around"
+	cont "and catch #MON"
+	cont "for as long as"
+	cont "you want!"
+
+	para "How about it?@"
+	text_end
+
+_SafariZoneGateSafariZoneWorker1ThatllBe5000PleaseText::
+	text "That'll be ¥5,000"
+	line "please!"
+
+	para "We only use a"
+	line "special # BALL"
+	cont "here."
+
+	para "<PLAYER> received"
+	line "30 SAFARI BALLs!@"
+	text_end
+
+_SafariZoneGateSafariZoneWorker1CallYouWhenOutOfBallsText::
+	text_start
+
+	para "We'll call you on"
+	line "the PA when you"
+	cont "run out of SAFARI"
+	cont "BALLs!"
+	done
+
 _SafariZoneGateSafariZoneWorker1PleaseComeAgainText::
 	text "OK! Please come"
 	line "again!"

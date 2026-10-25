@@ -179,7 +179,8 @@ ItemUseBall:
 ; The ranges are as follows.
 ; Poké Ball:         [0, 255]
 ; Great Ball:        [0, 200]
-; Ultra/Safari Ball: [0, 150]
+; Ultra Ball:        [0, 150]
+; Safari Ball:       [0, 99]
 ; Loop until an acceptable number is found.
 
 .loop
@@ -208,8 +209,14 @@ ItemUseBall:
 	cp GREAT_BALL
 	jr z, .checkForAilments
 
-; If it's an Ultra/Safari Ball and Rand1 is greater than 150, try again.
+; If it's an Ultra Ball and Rand1 is greater than 150, try again.
+; If it's a Safari Ball and Rand1 is greater than 99, try again.
+	ld a, [hl]
+	cp SAFARI_BALL
+	ld a, 99
+	jr z, .gotMaxRand1
 	ld a, 150
+.gotMaxRand1
 	cp b
 	jr c, .loop
 
@@ -1510,7 +1517,7 @@ ItemUseEscapeRope:
 	set BIT_ESCAPE_WARP, [hl]
 	ld hl, wStatusFlags4
 	res BIT_NO_BATTLES, [hl]
-	ResetEvent EVENT_IN_SAFARI_ZONE
+	ResetEvents EVENT_IN_SAFARI_ZONE, EVENT_SAFARI_UNLIMITED_STEPS
 	xor a
 	ld [wNumSafariBalls], a
 	ld [wSafariZoneGateCurScript], a ; SCRIPT_SAFARIZONEGATE_DEFAULT
